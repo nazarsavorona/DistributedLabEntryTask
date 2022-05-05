@@ -92,9 +92,9 @@ func main() {
 
 	//fmt.Print(graph.getGraphvizInfo("g", ByDuration))
 	//fmt.Println(graph.getGraphvizInfo("g", ByCost))
-	graph.printCostsMatrix(ByCost)
+	//graph.printCostsMatrix(ByCost)
 
-	vertices, ticketsLists := graph.optimalRoutes(ByCost)
+	vertices, ticketsLists := graph.optimalRoutes()
 
 	for i, path := range vertices {
 		for _, v := range path {

@@ -74,7 +74,7 @@ func (vertex *Vertex) getTicketByCondition(anotherID int, condition ConditionTyp
 	}
 
 	if currentMinIndex == -1 {
-		return nil
+		return NewFakeTicket()
 	}
 
 	return &vertex.possibleTickets[currentMinIndex]
@@ -168,26 +168,25 @@ func (graph *Graph) getGraphvizInfo(name string, edgeType ConditionType) string 
 	return graphString
 }
 
-func (graph *Graph) optimalRoutes(condition ConditionType) ([][]Vertex, [][]TrainTicket) {
+func (graph *Graph) optimalRoutes() ([][]Vertex, [][]TrainTicket) {
 	paths := make([][]Vertex, 0)
 	tickets := make([][]TrainTicket, 0)
 
 	currentPath := make([]Vertex, 0)
 	currentTickets := make([]TrainTicket, 0)
 
-	mapping, costs := graph.getDistanceMatrix(condition)
-
 	for _, startVertex := range graph.vertices {
 		set := NewVertexSet()
 		set.AddMulti(graph.vertices...)
 
-		fmt.Printf("\n\ns:%d\n", startVertex.stationID)
-
 		currentPath = make([]Vertex, 0)
 		currentTickets = make([]TrainTicket, 0)
 
-		HeldKarp(startVertex, *set, *startVertex, mapping, costs,
-			&currentPath, &currentTickets)
+		currentPath = append(currentPath, *startVertex)
+
+		fmt.Printf("%.2f\n", HeldKarp(startVertex, *set, *startVertex, &currentPath, &currentTickets))
+
+		currentTickets = append([]TrainTicket{*currentPath[0].getTicketByCondition(currentPath[1].stationID, ByCost)}, currentTickets...)
 
 		paths = append(paths, currentPath)
 		tickets = append(tickets, currentTickets)
@@ -219,10 +218,9 @@ func (graph *Graph) printCostsMatrix(conditionType ConditionType) {
 	}
 }
 
-func HeldKarp(start *Vertex, vertices VertexSet, v Vertex, mapping map[int]int,
-	costs [][]*TrainTicket, path *[]Vertex, tickets *[]TrainTicket) float64 {
+func HeldKarp(start *Vertex, vertices VertexSet, v Vertex, path *[]Vertex, tickets *[]TrainTicket) float64 {
 	if vertices.Size() == 1 && vertices.Has(&v) {
-		return costs[mapping[start.stationID]][mapping[v.stationID]].price
+		return start.getTicketByCondition(v.stationID, ByCost).price
 	}
 
 	vertices.Remove(&v)
@@ -239,14 +237,14 @@ func HeldKarp(start *Vertex, vertices VertexSet, v Vertex, mapping map[int]int,
 		tempSet := *NewVertexSet()
 		tempSet = *tempSet.Union(&vertices)
 
-		ticket := costs[mapping[currentVertex.stationID]][mapping[v.stationID]]
+		ticket := currentVertex.getTicketByCondition(v.stationID, ByCost)
 		currentAdjacentCost := ticket.price
 
 		if currentAdjacentCost == math.MaxFloat64 {
 			continue
 		}
 
-		currentHeldKarp := HeldKarp(start, tempSet, *currentVertex, mapping, costs, path, tickets)
+		currentHeldKarp := HeldKarp(start, tempSet, *currentVertex, path, tickets)
 
 		if currentHeldKarp == math.MaxFloat64 {
 			continue
