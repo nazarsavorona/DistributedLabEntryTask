@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"math"
 	"os"
 	"strconv"
 	"strings"
@@ -18,9 +19,25 @@ type TrainTicket struct {
 	price     float64
 	departure time.Time
 	arrival   time.Time
+	duration  time.Duration
+}
+
+func NewFakeTicket() *TrainTicket {
+	return &TrainTicket{
+		trainID:   -1,
+		from:      0,
+		to:        0,
+		price:     math.MaxFloat64,
+		departure: time.Time{},
+		arrival:   time.Time{},
+		duration:  time.Hour * 24 * 2, //two days
+	}
 }
 
 func (ticket TrainTicket) String() string {
+	if ticket.trainID == -1 {
+		return fmt.Sprint("Fake")
+	}
 	return fmt.Sprintf("{TrainID: %d, from: %d, to: %d, price: %f, departure: %s, arrival: %s}",
 		ticket.trainID, ticket.from, ticket.to, ticket.price, ticket.departure.Format("15:04:05"), ticket.arrival.Format("15:04:05"))
 }
@@ -40,7 +57,10 @@ func getTicketsString(tickets []TrainTicket) string {
 }
 
 func usage() {
-	fmt.Fprintf(os.Stderr, "usage: %s [inputfile]\n", os.Args[0])
+	_, err := fmt.Fprintf(os.Stderr, "usage: %s [inputfile]\n", os.Args[0])
+	if err != nil {
+		return
+	}
 	flag.PrintDefaults()
 	os.Exit(2)
 }
@@ -54,14 +74,38 @@ func main() {
 
 	file := openFile(filepath)
 
-	defer file.Close()
+	defer func(file *os.File) {
+		err := file.Close()
+		if err != nil {
+
+		}
+	}(file)
 
 	data := readCsv(file)
 
 	tickets := createTicketList(data)
 
-	fmt.Println(len(tickets))
-	fmt.Println(getTicketsString(tickets))
+	//fmt.Println(len(tickets))
+	//fmt.Println(getTicketsString(tickets))
+
+	graph := generateGraph(tickets)
+
+	//fmt.Print(graph.getGraphvizInfo("g", ByDuration))
+	//fmt.Println(graph.getGraphvizInfo("g", ByCost))
+	graph.printCostsMatrix(ByCost)
+
+	vertices, ticketsLists := graph.optimalRoutes(ByCost)
+
+	for i, path := range vertices {
+		for _, v := range path {
+			print(v.stationID)
+			print(" ")
+		}
+		println()
+		fmt.Printf("%v\n", ticketsLists[i])
+	}
+
+	//fmt.Printf("%.2f\n", cost)
 }
 
 func readCsv(file *os.File) [][]string {
@@ -110,7 +154,11 @@ func createTicketList(data [][]string) []TrainTicket {
 				ticket.departure, _ = time.Parse("15:04:05", field)
 			case 5:
 				ticket.arrival, _ = time.Parse("15:04:05", field)
+				if ticket.departure.Hour() > ticket.arrival.Hour() {
+					ticket.arrival = ticket.arrival.AddDate(0, 0, 1)
+				}
 
+				ticket.duration = ticket.arrival.Sub(ticket.departure)
 			}
 		}
 
