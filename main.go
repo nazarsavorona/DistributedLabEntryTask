@@ -12,6 +12,14 @@ import (
 	"time"
 )
 
+const fakeHugeCost = math.MaxFloat64
+
+const fakeTripDuration = time.Hour * 24 * 3
+const fakeTravelDuration = fakeTripDuration * 10
+
+const fakeTimeUnixNano = int64(-6829751778871345152) // time.Date(0, 0, 0, 0, 0, 0, 0, time.UTC) UnixNano representation
+var fakeTime = time.Unix(0, fakeTimeUnixNano)
+
 type TrainTicket struct {
 	trainID   int
 	from      int
@@ -27,10 +35,10 @@ func NewFakeTicket() *TrainTicket {
 		trainID:   -1,
 		from:      0,
 		to:        0,
-		price:     math.MaxFloat64,
-		departure: time.Time{},
-		arrival:   time.Time{},
-		duration:  time.Hour * 24 * 2, //two days
+		price:     fakeHugeCost,
+		departure: fakeTime,
+		arrival:   fakeTime,
+		duration:  fakeTripDuration,
 	}
 }
 
@@ -38,7 +46,7 @@ func (ticket TrainTicket) String() string {
 	if ticket.trainID == -1 {
 		return fmt.Sprint("Fake")
 	}
-	return fmt.Sprintf("{TrainID: %d, from: %d, to: %d, price: %f, departure: %s, arrival: %s}",
+	return fmt.Sprintf("{TrainID: %d, from: %d, to: %d, price: %.2f, departure: %s, arrival: %s}",
 		ticket.trainID, ticket.from, ticket.to, ticket.price, ticket.departure.Format("15:04:05"), ticket.arrival.Format("15:04:05"))
 }
 
@@ -77,7 +85,6 @@ func main() {
 	defer func(file *os.File) {
 		err := file.Close()
 		if err != nil {
-
 		}
 	}(file)
 
@@ -91,21 +98,19 @@ func main() {
 	graph := generateGraph(tickets)
 
 	//fmt.Print(graph.getGraphvizInfo("g", ByDuration))
-	//fmt.Println(graph.getGraphvizInfo("g", ByCost))
+	fmt.Println(graph.getGraphvizInfo("g", ByCost))
 	//graph.printCostsMatrix(ByCost)
 
-	vertices, ticketsLists := graph.optimalRoutes()
+	vertices, ticketsLists := graph.optimalRoutes(ByDuration)
+	//vertices, ticketsLists := graph.optimalRoutes(ByCost)
 
 	for i, path := range vertices {
 		for _, v := range path {
-			print(v.stationID)
-			print(" ")
+			fmt.Printf("%d ", v.stationID)
 		}
-		println()
+		fmt.Printf("\n")
 		fmt.Printf("%v\n", ticketsLists[i])
 	}
-
-	//fmt.Printf("%.2f\n", cost)
 }
 
 func readCsv(file *os.File) [][]string {
