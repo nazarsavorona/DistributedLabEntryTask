@@ -30,6 +30,9 @@ type TrainTicket struct {
 	duration  time.Duration
 }
 
+type Tickets []TrainTicket
+type TicketsWithAlternatives []Tickets
+
 func NewFakeTicket() *TrainTicket {
 	return &TrainTicket{
 		trainID:   -1,
@@ -46,12 +49,42 @@ func (ticket TrainTicket) String() string {
 	if ticket.trainID == -1 {
 		return fmt.Sprint("Fake")
 	}
-	return fmt.Sprintf("{TrainID: %d, from: %d, to: %d, price: %.2f, departure: %s, arrival: %s}",
-		ticket.trainID, ticket.from, ticket.to, ticket.price, ticket.departure.Format("15:04:05"), ticket.arrival.Format("15:04:05"))
+	return fmt.Sprintf("{TrainID: %d, from: %d, to: %d, price: %.2f, departure: %s, arrival: %s, duration: %s}",
+		ticket.trainID, ticket.from, ticket.to, ticket.price, ticket.departure.Format("15:04:05"), ticket.arrival.Format("15:04:05"), ticket.duration)
 }
 
-func getTicketsString(tickets []TrainTicket) string {
+func (ticket *TrainTicket) getDuration(currentTime time.Time) time.Duration {
+	currentDepartureTime := ticket.departure
+	currentWaitingTime := time.Duration(0)
+
+	if currentTime != fakeTime {
+		for currentDepartureTime.Before(currentTime) {
+			currentDepartureTime = currentDepartureTime.Add(time.Hour * 24)
+		}
+
+		currentWaitingTime = currentDepartureTime.Sub(currentTime)
+	}
+
+	return ticket.duration + currentWaitingTime
+}
+
+func (tickets TicketsWithAlternatives) String() string {
 	ticketsString := fmt.Sprint("[")
+	for i, ticketAlternatives := range tickets {
+		if i == 0 {
+			ticketsString += fmt.Sprint(ticketAlternatives.String())
+		} else {
+			ticketsString += fmt.Sprint(";\n", ticketAlternatives.String())
+		}
+	}
+	ticketsString += fmt.Sprint("]")
+
+	return ticketsString
+}
+
+func (tickets Tickets) String() string {
+	ticketsString := fmt.Sprint("[")
+
 	for i, ticket := range tickets {
 		if i == 0 {
 			ticketsString += fmt.Sprint(ticket)
@@ -98,18 +131,14 @@ func main() {
 	graph := generateGraph(tickets)
 
 	//fmt.Print(graph.getGraphvizInfo("g", ByDuration))
-	fmt.Println(graph.getGraphvizInfo("g", ByCost))
+	//fmt.Println(graph.getGraphvizInfo("g", ByCost))
 	//graph.printCostsMatrix(ByCost)
 
-	vertices, ticketsLists := graph.optimalRoutes(ByDuration)
-	//vertices, ticketsLists := graph.optimalRoutes(ByCost)
+	//ticketsLists := graph.optimalRoutes(ByDuration)
+	ticketsLists := graph.optimalRoutes(ByCost)
 
-	for i, path := range vertices {
-		for _, v := range path {
-			fmt.Printf("%d ", v.stationID)
-		}
-		fmt.Printf("\n")
-		fmt.Printf("%v\n", ticketsLists[i])
+	for i, tickets := range ticketsLists {
+		fmt.Printf("%d:\n%s\n", i, tickets.String())
 	}
 }
 
