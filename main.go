@@ -98,7 +98,7 @@ func (tickets Tickets) String() string {
 }
 
 func usage() {
-	_, err := fmt.Fprintf(os.Stderr, "usage: %s [inputfile]\n", os.Args[0])
+	_, err := fmt.Fprintf(os.Stderr, "usage: %s [input file] [output file]\n", os.Args[0])
 	if err != nil {
 		return
 	}
@@ -107,13 +107,11 @@ func usage() {
 }
 
 func main() {
-	if len(os.Args) != 2 {
+	if len(os.Args) != 3 {
 		usage()
 	}
 
-	filepath := os.Args[1]
-
-	file := openFile(filepath)
+	file := openFile(os.Args[1])
 
 	defer func(file *os.File) {
 		err := file.Close()
@@ -122,11 +120,7 @@ func main() {
 	}(file)
 
 	data := readCsv(file)
-
 	tickets := createTicketList(data)
-
-	//fmt.Println(len(tickets))
-	//fmt.Println(getTicketsString(tickets))
 
 	graph := generateGraph(tickets)
 
@@ -134,11 +128,28 @@ func main() {
 	//fmt.Println(graph.getGraphvizInfo("g", ByCost))
 	//graph.printCostsMatrix(ByCost)
 
-	//ticketsLists := graph.optimalRoutes(ByDuration)
-	ticketsLists := graph.optimalRoutes(ByCost)
+	ticketsLists := graph.optimalRoutes(ByDuration)
+	//ticketsLists := graph.optimalRoutes(ByCost)
 
-	for i, tickets := range ticketsLists {
-		fmt.Printf("%d:\n%s\n", i, tickets.String())
+	writeToFile(os.Args[2], ticketsLists)
+}
+
+func writeToFile(filepath string, ticketsLists []TicketsWithAlternatives) {
+	file, err := os.Create(filepath)
+	if err != nil {
+		log.Fatal(err)
+	} else {
+		for i, tickets := range ticketsLists {
+			_, err := file.WriteString(fmt.Sprintf("%d:\n%s\n", i, tickets.String()))
+			if err != nil {
+				return
+			}
+		}
+	}
+
+	err = file.Close()
+	if err != nil {
+		return
 	}
 }
 
@@ -188,8 +199,8 @@ func createTicketList(data [][]string) []TrainTicket {
 				ticket.departure, _ = time.Parse("15:04:05", field)
 			case 5:
 				ticket.arrival, _ = time.Parse("15:04:05", field)
-				if ticket.departure.Hour() > ticket.arrival.Hour() {
-					ticket.arrival = ticket.arrival.AddDate(0, 0, 1)
+				if ticket.departure.After(ticket.arrival) {
+					ticket.arrival = ticket.arrival.Add(time.Hour * 24)
 				}
 
 				ticket.duration = ticket.arrival.Sub(ticket.departure)
