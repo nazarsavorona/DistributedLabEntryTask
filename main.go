@@ -34,7 +34,7 @@ func main() {
 	tickets := createTicketList(data)
 
 	graph := generateGraph(tickets)
-	var ticketsLists []TicketsWithAlternatives
+	ticketsLists := make([]TicketsWithAlternatives, 0)
 
 	if len(os.Args) == 4 && strings.ToLower(os.Args[3]) == "time" {
 		ticketsLists = graph.optimalRoutes(ByDuration)
@@ -42,5 +42,8 @@ func main() {
 		ticketsLists = graph.optimalRoutes(ByCost)
 	}
 
+	//println(graph.getGraphvizInfo("f", ByCost))
+
 	writeToFile(os.Args[2], ticketsLists)
+	fmt.Printf("File sha256 hash: %s\n", getFileSha256(os.Args[2]))
 }

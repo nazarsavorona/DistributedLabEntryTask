@@ -1,21 +1,32 @@
 package main
 
-import "time"
+import (
+	"time"
+)
 
-func HeldKarpByCost(start *Vertex, vertices VertexSet, v Vertex, path *[]Vertex, tickets *[]TrainTicket, globalVertices *VertexSet) float64 {
+func HeldKarpByCost(start *Vertex, vertices VertexSet, v Vertex, path *[]Vertex, cost *float64,
+	currentPath []Vertex, currentCost float64, tickets *[]TrainTicket, currentTickets []TrainTicket) float64 {
 	if vertices.size() == 1 && vertices.has(&v) {
-		return start.getTicketByPrice(v.stationID).price
+		ticket := start.getTicketByPrice(v.stationID)
+		currentTickets = append(currentTickets, *ticket)
+		currentPath = append(currentPath, *start)
+
+		currentCost += ticket.price
+
+		if *cost >= currentCost {
+			*path = currentPath
+			*cost = currentCost
+			*tickets = currentTickets
+		}
+
+		return ticket.price
 	}
 
 	vertices.remove(&v)
 	otherVertices := vertices.getList()
 
-	currentCost := FakeHugeCost
 	minCost := FakeHugeCost
-
-	minVertex := otherVertices[0]
-	minTicket := NewFakeTicket()
-	minVertexFound := false
+	localCost := FakeHugeCost
 
 	for _, currentVertex := range otherVertices {
 		tempSet := *NewVertexSet()
@@ -24,31 +35,33 @@ func HeldKarpByCost(start *Vertex, vertices VertexSet, v Vertex, path *[]Vertex,
 		ticket := currentVertex.getTicketByPrice(v.stationID)
 		currentAdjacentCost := ticket.price
 
-		if currentAdjacentCost == FakeHugeCost || !globalVertices.has(currentVertex) {
+		if currentAdjacentCost == FakeHugeCost {
 			continue
 		}
 
-		currentHeldKarp := HeldKarpByCost(start, tempSet, *currentVertex, path, tickets, globalVertices)
+		currentPath = append(currentPath, *currentVertex)
+		currentTickets = append(currentTickets, *ticket)
+		currentCost += currentAdjacentCost
+
+		currentHeldKarp := HeldKarpByCost(start, tempSet, *currentVertex, path, cost, currentPath, currentCost, tickets, currentTickets)
 
 		if currentHeldKarp == FakeHugeCost {
+			currentPath = currentPath[:len(currentPath)-1]
+			currentTickets = currentTickets[:len(currentTickets)-1]
+			currentCost -= currentAdjacentCost
+
 			continue
 		}
 
-		currentCost = currentHeldKarp + currentAdjacentCost
+		localCost = currentHeldKarp + currentAdjacentCost
 
-		if minCost == FakeHugeCost || minCost > currentCost {
-			minCost = currentCost
-			minVertex = currentVertex
-			minTicket = ticket
-			minVertexFound = true
+		if minCost == FakeHugeCost || minCost > localCost {
+			minCost = localCost
 		}
-	}
 
-	if minVertexFound {
-		*path = append(*path, *minVertex)
-		*tickets = append(*tickets, *minTicket)
-
-		globalVertices.remove(minVertex)
+		currentPath = currentPath[:len(currentPath)-1]
+		currentTickets = currentTickets[:len(currentTickets)-1]
+		currentCost -= currentAdjacentCost
 	}
 
 	return minCost

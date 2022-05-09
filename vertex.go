@@ -54,7 +54,6 @@ func (vertex *Vertex) getTicketByPrice(anotherID int) *TrainTicket {
 				minIndex = i
 			}
 		}
-
 	}
 
 	if minIndex == -1 {

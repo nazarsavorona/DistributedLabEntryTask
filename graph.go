@@ -142,7 +142,10 @@ func (graph *Graph) optimalRoutes(condition ConditionType) []TicketsWithAlternat
 
 		switch condition {
 		case ByCost:
-			currentCost = HeldKarpByCost(startVertex, *set, *startVertex, &currentPath, &currentTickets, globalSet)
+			initialCost := FakeHugeCost
+
+			currentCost = HeldKarpByCost(startVertex, *set, *startVertex, &currentPath, &initialCost,
+				make([]Vertex, 0), 0, &currentTickets, make([]TrainTicket, 0))
 		case ByDuration:
 			initialTime := FakeTime
 			currentDuration = HeldKarpByDuration(startVertex, &initialTime, *set, *startVertex, &currentPath, &currentTickets, globalSet)
@@ -151,7 +154,13 @@ func (graph *Graph) optimalRoutes(condition ConditionType) []TicketsWithAlternat
 		if len(currentPath) == len(graph.vertices) {
 			switch condition {
 			case ByCost:
-				currentTickets = append([]TrainTicket{*currentPath[0].getTicketByPrice(currentPath[1].stationID)}, currentTickets...)
+				for i, j := 0, len(currentPath)-1; i < j; i, j = i+1, j-1 {
+					currentPath[i], currentPath[j] = currentPath[j], currentPath[i]
+				}
+
+				for i, j := 0, len(currentTickets)-1; i < j; i, j = i+1, j-1 {
+					currentTickets[i], currentTickets[j] = currentTickets[j], currentTickets[i]
+				}
 
 				if currentCost < minCost {
 					paths = make([][]Vertex, 0)
