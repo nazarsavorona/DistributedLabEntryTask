@@ -4,10 +4,11 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"strings"
 )
 
 func usage() {
-	_, err := fmt.Fprintf(os.Stderr, "usage: %s [input file] [output file]\n", os.Args[0])
+	_, err := fmt.Fprintf(os.Stderr, "usage: %s <input file> <output file> [{cost} / time]\n", os.Args[0])
 	if err != nil {
 		return
 	}
@@ -16,7 +17,8 @@ func usage() {
 }
 
 func main() {
-	if len(os.Args) != 3 {
+	if len(os.Args) < 3 || len(os.Args) > 4 ||
+		(len(os.Args) == 4 && !(strings.ToLower(os.Args[3]) == "cost" || strings.ToLower(os.Args[3]) == "time")) {
 		usage()
 	}
 
@@ -32,13 +34,13 @@ func main() {
 	tickets := createTicketList(data)
 
 	graph := generateGraph(tickets)
+	var ticketsLists []TicketsWithAlternatives
 
-	//fmt.Print(graph.getGraphvizInfo("g", ByDuration))
-	//fmt.Println(graph.getGraphvizInfo("g", ByCost))
-	//graph.printCostsMatrix(ByCost)
-
-	ticketsLists := graph.optimalRoutes(ByDuration)
-	//ticketsLists := graph.optimalRoutes(ByCost)
+	if len(os.Args) == 4 && strings.ToLower(os.Args[3]) == "time" {
+		ticketsLists = graph.optimalRoutes(ByDuration)
+	} else {
+		ticketsLists = graph.optimalRoutes(ByCost)
+	}
 
 	writeToFile(os.Args[2], ticketsLists)
 }
