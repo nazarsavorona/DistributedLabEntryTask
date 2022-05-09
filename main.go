@@ -42,8 +42,5 @@ func main() {
 		ticketsLists = graph.optimalRoutes(ByCost)
 	}
 
-	//println(graph.getGraphvizInfo("f", ByCost))
-
 	writeToFile(os.Args[2], ticketsLists)
-	fmt.Printf("File sha256 hash: %s\n", getFileSha256(os.Args[2]))
 }
