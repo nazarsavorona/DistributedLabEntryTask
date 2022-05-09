@@ -1,8 +1,10 @@
 package main
 
 import (
+	"crypto/sha256"
 	"encoding/csv"
 	"fmt"
+	"io"
 	"log"
 	"os"
 )
@@ -46,4 +48,24 @@ func writeToFile(filepath string, ticketsLists []TicketsWithAlternatives) {
 	if err != nil {
 		return
 	}
+}
+
+func getFileSha256(filepath string) string {
+	f, err := os.Open(filepath)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer func(f *os.File) {
+		err := f.Close()
+		if err != nil {
+
+		}
+	}(f)
+
+	h := sha256.New()
+	if _, err := io.Copy(h, f); err != nil {
+		log.Fatal(err)
+	}
+
+	return fmt.Sprintf("%x", h.Sum(nil))
 }
