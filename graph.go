@@ -167,8 +167,10 @@ func (graph *Graph) optimalRoutesByDuration() []TicketsWithAlternatives {
 					minDuration = currentDuration
 				}
 
-				paths = append(paths, path)
-				tickets = append(tickets, currentTickets[k])
+				if currentDuration <= minDuration {
+					paths = append(paths, path)
+					tickets = append(tickets, currentTickets[k])
+				}
 			}
 		}
 	}
@@ -231,8 +233,10 @@ func (graph *Graph) optimalRoutesByCost() []TicketsWithAlternatives {
 				minCost = currentCost
 			}
 
-			paths = append(paths, currentPath)
-			tickets = append(tickets, currentTickets)
+			if currentCost <= minCost {
+				paths = append(paths, currentPath)
+				tickets = append(tickets, currentTickets)
+			}
 		}
 	}
 
