@@ -35,7 +35,6 @@ func (graph *Graph) getVertex(stationID int) *Vertex {
 
 func (graph *Graph) addVertex(stationID int) {
 	if graph.exists(stationID) {
-		//fmt.Printf("Station \"%d\" already exists in a graph\n", stationID)
 		return
 	}
 

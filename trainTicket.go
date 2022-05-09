@@ -13,8 +13,8 @@ const FakeHugeCost = math.MaxFloat64
 const FakeTripDuration = time.Hour * 24 * 3
 const FakeTravelDuration = FakeTripDuration * 10
 
-const FakeTimeUnixNano = int64(-6829751778871345152) // time.Date(0, 0, 0, 0, 0, 0, 0, time.UTC) UnixNano representation
-var FakeTime = time.Unix(0, FakeTimeUnixNano)
+const FakeTimeUnixNano = int64(-62169984000) // time.Date(0, 0, 0, 0, 0, 0, 0, time.UTC).Unix() representation
+var FakeTime = time.Unix(FakeTimeUnixNano, 0)
 
 type ConditionType int
 
