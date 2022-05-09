@@ -1,0 +1,66 @@
+0:
+[[{TrainID: 1171, from: 1909, to: 1921, price: 1407.37, departure: 12:17:00, arrival: 15:47:00, duration: 3h30m0s};
+{TrainID: 1172, from: 1909, to: 1921, price: 1407.37, departure: 12:17:00, arrival: 15:47:00, duration: 3h30m0s}];
+[{TrainID: 1140, from: 1921, to: 1902, price: 114.12, departure: 09:39:00, arrival: 00:15:00, duration: 14h36m0s}];
+[{TrainID: 919, from: 1902, to: 1981, price: 130.60, departure: 04:59:00, arrival: 20:06:00, duration: 15h7m0s}];
+[{TrainID: 1156, from: 1981, to: 1937, price: 140.98, departure: 09:21:00, arrival: 21:31:00, duration: 12h10m0s}];
+[{TrainID: 1148, from: 1937, to: 1929, price: 134.11, departure: 09:40:00, arrival: 23:04:00, duration: 13h24m0s};
+{TrainID: 1149, from: 1937, to: 1929, price: 134.11, departure: 09:40:00, arrival: 23:04:00, duration: 13h24m0s}];
+[{TrainID: 909, from: 1929, to: 1909, price: 1790.87, departure: 10:01:00, arrival: 01:00:00, duration: 14h59m0s};
+{TrainID: 910, from: 1929, to: 1909, price: 1790.87, departure: 10:01:00, arrival: 01:00:00, duration: 14h59m0s};
+{TrainID: 1367, from: 1929, to: 1909, price: 1790.87, departure: 11:21:00, arrival: 00:30:00, duration: 13h9m0s}]]
+1:
+[[{TrainID: 909, from: 1929, to: 1909, price: 1790.87, departure: 10:01:00, arrival: 01:00:00, duration: 14h59m0s};
+{TrainID: 910, from: 1929, to: 1909, price: 1790.87, departure: 10:01:00, arrival: 01:00:00, duration: 14h59m0s};
+{TrainID: 1367, from: 1929, to: 1909, price: 1790.87, departure: 11:21:00, arrival: 00:30:00, duration: 13h9m0s}];
+[{TrainID: 1171, from: 1909, to: 1921, price: 1407.37, departure: 12:17:00, arrival: 15:47:00, duration: 3h30m0s};
+{TrainID: 1172, from: 1909, to: 1921, price: 1407.37, departure: 12:17:00, arrival: 15:47:00, duration: 3h30m0s}];
+[{TrainID: 1140, from: 1921, to: 1902, price: 114.12, departure: 09:39:00, arrival: 00:15:00, duration: 14h36m0s}];
+[{TrainID: 919, from: 1902, to: 1981, price: 130.60, departure: 04:59:00, arrival: 20:06:00, duration: 15h7m0s}];
+[{TrainID: 1156, from: 1981, to: 1937, price: 140.98, departure: 09:21:00, arrival: 21:31:00, duration: 12h10m0s}];
+[{TrainID: 1148, from: 1937, to: 1929, price: 134.11, departure: 09:40:00, arrival: 23:04:00, duration: 13h24m0s};
+{TrainID: 1149, from: 1937, to: 1929, price: 134.11, departure: 09:40:00, arrival: 23:04:00, duration: 13h24m0s}]]
+2:
+[[{TrainID: 1140, from: 1921, to: 1902, price: 114.12, departure: 09:39:00, arrival: 00:15:00, duration: 14h36m0s}];
+[{TrainID: 919, from: 1902, to: 1981, price: 130.60, departure: 04:59:00, arrival: 20:06:00, duration: 15h7m0s}];
+[{TrainID: 1156, from: 1981, to: 1937, price: 140.98, departure: 09:21:00, arrival: 21:31:00, duration: 12h10m0s}];
+[{TrainID: 1148, from: 1937, to: 1929, price: 134.11, departure: 09:40:00, arrival: 23:04:00, duration: 13h24m0s};
+{TrainID: 1149, from: 1937, to: 1929, price: 134.11, departure: 09:40:00, arrival: 23:04:00, duration: 13h24m0s}];
+[{TrainID: 909, from: 1929, to: 1909, price: 1790.87, departure: 10:01:00, arrival: 01:00:00, duration: 14h59m0s};
+{TrainID: 910, from: 1929, to: 1909, price: 1790.87, departure: 10:01:00, arrival: 01:00:00, duration: 14h59m0s};
+{TrainID: 1367, from: 1929, to: 1909, price: 1790.87, departure: 11:21:00, arrival: 00:30:00, duration: 13h9m0s}];
+[{TrainID: 1171, from: 1909, to: 1921, price: 1407.37, departure: 12:17:00, arrival: 15:47:00, duration: 3h30m0s};
+{TrainID: 1172, from: 1909, to: 1921, price: 1407.37, departure: 12:17:00, arrival: 15:47:00, duration: 3h30m0s}]]
+3:
+[[{TrainID: 919, from: 1902, to: 1981, price: 130.60, departure: 04:59:00, arrival: 20:06:00, duration: 15h7m0s}];
+[{TrainID: 1156, from: 1981, to: 1937, price: 140.98, departure: 09:21:00, arrival: 21:31:00, duration: 12h10m0s}];
+[{TrainID: 1148, from: 1937, to: 1929, price: 134.11, departure: 09:40:00, arrival: 23:04:00, duration: 13h24m0s};
+{TrainID: 1149, from: 1937, to: 1929, price: 134.11, departure: 09:40:00, arrival: 23:04:00, duration: 13h24m0s}];
+[{TrainID: 909, from: 1929, to: 1909, price: 1790.87, departure: 10:01:00, arrival: 01:00:00, duration: 14h59m0s};
+{TrainID: 910, from: 1929, to: 1909, price: 1790.87, departure: 10:01:00, arrival: 01:00:00, duration: 14h59m0s};
+{TrainID: 1367, from: 1929, to: 1909, price: 1790.87, departure: 11:21:00, arrival: 00:30:00, duration: 13h9m0s}];
+[{TrainID: 1171, from: 1909, to: 1921, price: 1407.37, departure: 12:17:00, arrival: 15:47:00, duration: 3h30m0s};
+{TrainID: 1172, from: 1909, to: 1921, price: 1407.37, departure: 12:17:00, arrival: 15:47:00, duration: 3h30m0s}];
+[{TrainID: 1140, from: 1921, to: 1902, price: 114.12, departure: 09:39:00, arrival: 00:15:00, duration: 14h36m0s}]]
+4:
+[[{TrainID: 1148, from: 1937, to: 1929, price: 134.11, departure: 09:40:00, arrival: 23:04:00, duration: 13h24m0s};
+{TrainID: 1149, from: 1937, to: 1929, price: 134.11, departure: 09:40:00, arrival: 23:04:00, duration: 13h24m0s}];
+[{TrainID: 909, from: 1929, to: 1909, price: 1790.87, departure: 10:01:00, arrival: 01:00:00, duration: 14h59m0s};
+{TrainID: 910, from: 1929, to: 1909, price: 1790.87, departure: 10:01:00, arrival: 01:00:00, duration: 14h59m0s};
+{TrainID: 1367, from: 1929, to: 1909, price: 1790.87, departure: 11:21:00, arrival: 00:30:00, duration: 13h9m0s}];
+[{TrainID: 1171, from: 1909, to: 1921, price: 1407.37, departure: 12:17:00, arrival: 15:47:00, duration: 3h30m0s};
+{TrainID: 1172, from: 1909, to: 1921, price: 1407.37, departure: 12:17:00, arrival: 15:47:00, duration: 3h30m0s}];
+[{TrainID: 1140, from: 1921, to: 1902, price: 114.12, departure: 09:39:00, arrival: 00:15:00, duration: 14h36m0s}];
+[{TrainID: 919, from: 1902, to: 1981, price: 130.60, departure: 04:59:00, arrival: 20:06:00, duration: 15h7m0s}];
+[{TrainID: 1156, from: 1981, to: 1937, price: 140.98, departure: 09:21:00, arrival: 21:31:00, duration: 12h10m0s}]]
+5:
+[[{TrainID: 1156, from: 1981, to: 1937, price: 140.98, departure: 09:21:00, arrival: 21:31:00, duration: 12h10m0s}];
+[{TrainID: 1148, from: 1937, to: 1929, price: 134.11, departure: 09:40:00, arrival: 23:04:00, duration: 13h24m0s};
+{TrainID: 1149, from: 1937, to: 1929, price: 134.11, departure: 09:40:00, arrival: 23:04:00, duration: 13h24m0s}];
+[{TrainID: 909, from: 1929, to: 1909, price: 1790.87, departure: 10:01:00, arrival: 01:00:00, duration: 14h59m0s};
+{TrainID: 910, from: 1929, to: 1909, price: 1790.87, departure: 10:01:00, arrival: 01:00:00, duration: 14h59m0s};
+{TrainID: 1367, from: 1929, to: 1909, price: 1790.87, departure: 11:21:00, arrival: 00:30:00, duration: 13h9m0s}];
+[{TrainID: 1171, from: 1909, to: 1921, price: 1407.37, departure: 12:17:00, arrival: 15:47:00, duration: 3h30m0s};
+{TrainID: 1172, from: 1909, to: 1921, price: 1407.37, departure: 12:17:00, arrival: 15:47:00, duration: 3h30m0s}];
+[{TrainID: 1140, from: 1921, to: 1902, price: 114.12, departure: 09:39:00, arrival: 00:15:00, duration: 14h36m0s}];
+[{TrainID: 919, from: 1902, to: 1981, price: 130.60, departure: 04:59:00, arrival: 20:06:00, duration: 15h7m0s}]]
