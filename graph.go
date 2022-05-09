@@ -3,123 +3,7 @@ package main
 import (
 	"fmt"
 	"strings"
-	"time"
 )
-
-type ConditionType int
-
-const (
-	ByCost ConditionType = iota
-	ByDuration
-)
-
-type Vertex struct {
-	stationID       int
-	adjacent        []*Vertex
-	possibleTickets []TrainTicket
-}
-
-func NewVertex(stationID int) *Vertex {
-	return &Vertex{
-		stationID:       stationID,
-		adjacent:        []*Vertex{},
-		possibleTickets: []TrainTicket{},
-	}
-}
-
-func (vertex *Vertex) getGraphvizInfo(edgeType ConditionType) string {
-	info := fmt.Sprintf("\"%d\"\n", vertex.stationID)
-
-	edgeInfo := ""
-	for _, ticket := range vertex.possibleTickets {
-		edgeInfo = ""
-
-		switch edgeType {
-		case ByCost:
-			edgeInfo += fmt.Sprintf("%.2f", ticket.price)
-		case ByDuration:
-			edgeInfo += ticket.duration.String()
-		}
-
-		//info += fmt.Sprintf("\"%d\" -> \"%d\" [ label = \"%s, train: %d\" ]\n",
-		//	ticket.from, ticket.to, edgeInfo, ticket.trainID)
-		info += fmt.Sprintf("\"%d\" -> \"%d\" [ label = \"%s\" ]\n",
-			ticket.from, ticket.to, edgeInfo)
-	}
-
-	return info
-}
-
-func (vertex *Vertex) getTicketByPrice(anotherID int) *TrainTicket {
-	minIndex := -1
-
-	for i := 0; i < len(vertex.possibleTickets); i++ {
-		if vertex.possibleTickets[i].to == anotherID {
-			if minIndex == -1 {
-				minIndex = i
-				continue
-			}
-
-			if vertex.possibleTickets[i].price < vertex.possibleTickets[minIndex].price {
-				minIndex = i
-			}
-		}
-
-	}
-
-	if minIndex == -1 {
-		return NewFakeTicket()
-	}
-
-	return &vertex.possibleTickets[minIndex]
-}
-
-func (vertex *Vertex) getTicketByDuration(anotherID int, currentTime time.Time) (*TrainTicket, time.Duration) {
-	minIndex := -1
-	minDuration := time.Duration(0)
-	currentDuration := time.Duration(0)
-
-	for i := 0; i < len(vertex.possibleTickets); i++ {
-		if vertex.possibleTickets[i].to == anotherID {
-			currentDuration = vertex.possibleTickets[i].getDuration(currentTime)
-
-			if minIndex == -1 || currentDuration < minDuration {
-				minIndex = i
-				minDuration = currentDuration
-			}
-		}
-	}
-
-	if minIndex == -1 {
-		return NewFakeTicket(), fakeTripDuration
-	}
-
-	return &vertex.possibleTickets[minIndex], minDuration
-}
-
-func (vertex Vertex) getTicketAlternativesByPrice(ticket TrainTicket) []TrainTicket {
-	tickets := make([]TrainTicket, 0)
-
-	for _, currentTicket := range vertex.possibleTickets {
-		if ticket.to == currentTicket.to && ticket.price == currentTicket.price {
-			tickets = append(tickets, currentTicket)
-		}
-	}
-
-	return tickets
-}
-
-func (vertex Vertex) getTicketAlternativesByDuration(ticket TrainTicket, currentTime time.Time) []TrainTicket {
-	tickets := make([]TrainTicket, 0)
-
-	for _, currentTicket := range vertex.possibleTickets {
-		if ticket.to == currentTicket.to && ticket.getDuration(currentTime) == currentTicket.getDuration(currentTime) {
-			tickets = append(tickets, currentTicket)
-		}
-	}
-
-	return tickets
-}
 
 type Graph struct {
 	vertices []*Vertex
@@ -221,7 +105,7 @@ func (graph *Graph) printCostsMatrix() {
 	for i, row := range costs {
 		fmt.Printf("%d\t", graph.vertices[i].stationID)
 		for j := range row {
-			if costs[i][j].price == fakeHugeCost {
+			if costs[i][j].price == FakeHugeCost {
 				fmt.Printf("max\t")
 			} else {
 				fmt.Printf("%.2f\t", costs[i][j].price)
@@ -239,18 +123,18 @@ func (graph *Graph) optimalRoutes(condition ConditionType) []TicketsWithAlternat
 	currentPath := make([]Vertex, 0)
 	currentTickets := make([]TrainTicket, 0)
 
-	minCost := fakeHugeCost
-	minDuration := fakeTravelDuration
+	minCost := FakeHugeCost
+	minDuration := FakeTravelDuration
 
-	currentCost := fakeHugeCost
-	currentDuration := fakeTravelDuration
+	currentCost := FakeHugeCost
+	currentDuration := FakeTravelDuration
 
 	for _, startVertex := range graph.vertices {
 		set := NewVertexSet()
 		globalSet := NewVertexSet()
 
-		set.AddMulti(graph.vertices...)
-		globalSet.AddMulti(graph.vertices...)
+		set.addMany(graph.vertices...)
+		globalSet.addMany(graph.vertices...)
 
 		currentPath = make([]Vertex, 0)
 		currentTickets = make([]TrainTicket, 0)
@@ -261,7 +145,7 @@ func (graph *Graph) optimalRoutes(condition ConditionType) []TicketsWithAlternat
 		case ByCost:
 			currentCost = HeldKarpByCost(startVertex, *set, *startVertex, &currentPath, &currentTickets, globalSet)
 		case ByDuration:
-			initialTime := fakeTime
+			initialTime := FakeTime
 			currentDuration = HeldKarpByDuration(startVertex, &initialTime, *set, *startVertex, &currentPath, &currentTickets, globalSet)
 		}
 
@@ -281,7 +165,7 @@ func (graph *Graph) optimalRoutes(condition ConditionType) []TicketsWithAlternat
 				tickets = append(tickets, currentTickets)
 
 			case ByDuration:
-				ticket, _ := currentPath[0].getTicketByDuration(currentPath[1].stationID, fakeTime)
+				ticket, _ := currentPath[0].getTicketByDuration(currentPath[1].stationID, FakeTime)
 				currentTickets = append([]TrainTicket{*ticket}, currentTickets...)
 
 				if currentDuration < minDuration {
@@ -312,7 +196,7 @@ func (graph *Graph) optimalRoutes(condition ConditionType) []TicketsWithAlternat
 	case ByDuration:
 		for i, path := range paths {
 			currentTickets := make(TicketsWithAlternatives, 0)
-			currentTime := fakeTime
+			currentTime := FakeTime
 
 			for j, vertex := range path {
 				if j > 0 {
@@ -327,109 +211,4 @@ func (graph *Graph) optimalRoutes(condition ConditionType) []TicketsWithAlternat
 	}
 
 	return ticketsWithAlternatives
-}
-
-func HeldKarpByCost(start *Vertex, vertices VertexSet, v Vertex, path *[]Vertex, tickets *[]TrainTicket, globalVertices *VertexSet) float64 {
-	if vertices.Size() == 1 && vertices.Has(&v) {
-		return start.getTicketByPrice(v.stationID).price
-	}
-
-	vertices.Remove(&v)
-	otherVertices := vertices.GetList()
-
-	currentCost := fakeHugeCost
-	minCost := fakeHugeCost
-
-	minVertex := otherVertices[0]
-	minTicket := NewFakeTicket()
-	minVertexFound := false
-
-	for _, currentVertex := range otherVertices {
-		tempSet := *NewVertexSet()
-		tempSet = *tempSet.Union(&vertices)
-
-		ticket := currentVertex.getTicketByPrice(v.stationID)
-		currentAdjacentCost := ticket.price
-
-		if currentAdjacentCost == fakeHugeCost || !globalVertices.Has(currentVertex) {
-			continue
-		}
-
-		currentHeldKarp := HeldKarpByCost(start, tempSet, *currentVertex, path, tickets, globalVertices)
-
-		if currentHeldKarp == fakeHugeCost {
-			continue
-		}
-
-		currentCost = currentHeldKarp + currentAdjacentCost
-
-		if minCost == fakeHugeCost || minCost > currentCost {
-			minCost = currentCost
-			minVertex = currentVertex
-			minTicket = ticket
-			minVertexFound = true
-		}
-	}
-
-	if minVertexFound {
-		*path = append(*path, *minVertex)
-		*tickets = append(*tickets, *minTicket)
-
-		globalVertices.Remove(minVertex)
-	}
-
-	return minCost
-}
-
-func HeldKarpByDuration(start *Vertex, currentTime *time.Time, vertices VertexSet, v Vertex, path *[]Vertex, tickets *[]TrainTicket, globalVertices *VertexSet) time.Duration {
-	if vertices.Size() == 1 && vertices.Has(&v) {
-		_, duration := start.getTicketByDuration(v.stationID, *currentTime)
-
-		return duration
-	}
-
-	vertices.Remove(&v)
-	otherVertices := vertices.GetList()
-
-	currentDuration := fakeTravelDuration
-	minDuration := fakeTravelDuration
-
-	minVertex := otherVertices[0]
-	minTicket := NewFakeTicket()
-	minVertexFound := false
-
-	for _, currentVertex := range otherVertices {
-		tempSet := *NewVertexSet()
-		tempSet.AddMulti(otherVertices...)
-
-		ticket, duration := currentVertex.getTicketByDuration(v.stationID, *currentTime)
-
-		if duration == fakeTripDuration || duration == fakeTravelDuration || !globalVertices.Has(currentVertex) {
-			continue
-		}
-
-		currentHeldKarp := HeldKarpByDuration(start, currentTime, tempSet, *currentVertex, path, tickets, globalVertices)
-
-		if currentHeldKarp == fakeTripDuration || currentHeldKarp == fakeTravelDuration {
-			continue
-		}
-
-		currentDuration = currentHeldKarp + duration
-
-		if minDuration == fakeTravelDuration || minDuration > currentDuration {
-			minDuration = currentDuration
-			minVertex = currentVertex
-			minTicket = ticket
-			minVertexFound = true
-		}
-	}
-
-	if minVertexFound {
-		*path = append(*path, *minVertex)
-		*tickets = append(*tickets, *minTicket)
-		*currentTime = minTicket.arrival
-		globalVertices.Remove(minVertex)
-	}
-
-	return minDuration
 }
