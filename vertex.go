@@ -80,7 +80,7 @@ func (vertex *Vertex) getTicketByDuration(anotherID int, currentTime time.Time) 
 	}
 
 	if minIndex == -1 {
-		return NewFakeTicket(), FakeTripDuration
+		return NewFakeTicket(), FakeTravelDuration
 	}
 
 	return &vertex.possibleTickets[minIndex], minDuration

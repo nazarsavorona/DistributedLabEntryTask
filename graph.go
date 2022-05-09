@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"strings"
+	"time"
 )
 
 type Graph struct {
@@ -116,65 +117,48 @@ func (graph *Graph) printCostsMatrix() {
 }
 
 func (graph *Graph) optimalRoutes(condition ConditionType) []TicketsWithAlternatives {
+	switch condition {
+	case ByCost:
+		return graph.optimalRoutesByCost()
+	case ByDuration:
+		return graph.optimalRoutesByDuration()
+	}
+
+	return nil
+}
+
+func (graph *Graph) optimalRoutesByDuration() []TicketsWithAlternatives {
 	paths := make([][]Vertex, 0)
 	tickets := make([][]TrainTicket, 0)
 
-	currentPath := make([]Vertex, 0)
-	currentTickets := make([]TrainTicket, 0)
+	currentPaths := make([][]Vertex, 0)
+	currentTickets := make([]Tickets, 0)
 
-	minCost := FakeHugeCost
 	minDuration := FakeTravelDuration
-
-	currentCost := FakeHugeCost
 	currentDuration := FakeTravelDuration
 
 	for _, startVertex := range graph.vertices {
 		set := NewVertexSet()
-		globalSet := NewVertexSet()
-
 		set.addMany(graph.vertices...)
-		globalSet.addMany(graph.vertices...)
 
-		currentPath = make([]Vertex, 0)
-		currentTickets = make([]TrainTicket, 0)
+		currentTickets = make([]Tickets, 0)
+		currentPaths = make([][]Vertex, 0)
 
-		currentPath = append(currentPath, *startVertex)
+		initialDuration := FakeTravelDuration
 
-		switch condition {
-		case ByCost:
-			initialCost := FakeHugeCost
+		currentDuration = HeldKarpByDuration(startVertex, FakeTime, *set, *startVertex, &currentPaths,
+			&initialDuration, make([]Vertex, 0), time.Duration(0), &currentTickets, make([]TrainTicket, 0))
 
-			currentCost = HeldKarpByCost(startVertex, *set, *startVertex, &currentPath, &initialCost,
-				make([]Vertex, 0), 0, &currentTickets, make([]TrainTicket, 0))
-		case ByDuration:
-			initialTime := FakeTime
-			currentDuration = HeldKarpByDuration(startVertex, &initialTime, *set, *startVertex, &currentPath, &currentTickets, globalSet)
-		}
+		for k, path := range currentPaths {
+			if len(path) == len(graph.vertices) {
 
-		if len(currentPath) == len(graph.vertices) {
-			switch condition {
-			case ByCost:
-				for i, j := 0, len(currentPath)-1; i < j; i, j = i+1, j-1 {
-					currentPath[i], currentPath[j] = currentPath[j], currentPath[i]
+				for i, j := 0, len(path)-1; i < j; i, j = i+1, j-1 {
+					path[i], path[j] = path[j], path[i]
 				}
 
-				for i, j := 0, len(currentTickets)-1; i < j; i, j = i+1, j-1 {
-					currentTickets[i], currentTickets[j] = currentTickets[j], currentTickets[i]
+				for i, j := 0, len(currentTickets[k])-1; i < j; i, j = i+1, j-1 {
+					currentTickets[k][i], currentTickets[k][j] = currentTickets[k][j], currentTickets[k][i]
 				}
-
-				if currentCost < minCost {
-					paths = make([][]Vertex, 0)
-					tickets = make([][]TrainTicket, 0)
-
-					minCost = currentCost
-				}
-
-				paths = append(paths, currentPath)
-				tickets = append(tickets, currentTickets)
-
-			case ByDuration:
-				ticket, _ := currentPath[0].getTicketByDuration(currentPath[1].stationID, FakeTime)
-				currentTickets = append([]TrainTicket{*ticket}, currentTickets...)
 
 				if currentDuration < minDuration {
 					paths = make([][]Vertex, 0)
@@ -183,39 +167,84 @@ func (graph *Graph) optimalRoutes(condition ConditionType) []TicketsWithAlternat
 					minDuration = currentDuration
 				}
 
-				paths = append(paths, currentPath)
-				tickets = append(tickets, currentTickets)
+				paths = append(paths, path)
+				tickets = append(tickets, currentTickets[k])
 			}
 		}
 	}
 
 	ticketsWithAlternatives := make([]TicketsWithAlternatives, 0)
-	switch condition {
-	case ByCost:
-		for i, path := range paths {
-			currentTickets := make(TicketsWithAlternatives, 0)
 
-			for j, vertex := range path {
-				currentTickets = append(currentTickets, vertex.getTicketAlternativesByPrice(tickets[i][j]))
+	for i, path := range paths {
+		currentTickets := make(TicketsWithAlternatives, 0)
+		currentTime := FakeTime
+
+		for j, vertex := range path {
+			if j > 0 {
+				currentTime = tickets[i][j-1].arrival
 			}
 
-			ticketsWithAlternatives = append(ticketsWithAlternatives, currentTickets)
+			currentTickets = append(currentTickets, vertex.getTicketAlternativesByDuration(tickets[i][j], currentTime))
 		}
-	case ByDuration:
-		for i, path := range paths {
-			currentTickets := make(TicketsWithAlternatives, 0)
-			currentTime := FakeTime
 
-			for j, vertex := range path {
-				if j > 0 {
-					currentTime = tickets[i][j-1].arrival
-				}
+		ticketsWithAlternatives = append(ticketsWithAlternatives, currentTickets)
+	}
 
-				currentTickets = append(currentTickets, vertex.getTicketAlternativesByDuration(tickets[i][j], currentTime))
+	return ticketsWithAlternatives
+}
+
+func (graph *Graph) optimalRoutesByCost() []TicketsWithAlternatives {
+	paths := make([][]Vertex, 0)
+	tickets := make([][]TrainTicket, 0)
+
+	currentPath := make([]Vertex, 0)
+	currentTickets := make([]TrainTicket, 0)
+
+	minCost := FakeHugeCost
+
+	currentCost := FakeHugeCost
+
+	for _, startVertex := range graph.vertices {
+		set := NewVertexSet()
+		set.addMany(graph.vertices...)
+
+		currentPath = make([]Vertex, 0)
+		currentTickets = make(Tickets, 0)
+		initialCost := FakeHugeCost
+
+		currentCost = HeldKarpByCost(startVertex, *set, *startVertex, &currentPath, &initialCost,
+			make([]Vertex, 0), 0, (*Tickets)(&currentTickets), make([]TrainTicket, 0))
+
+		if len(currentPath) == len(graph.vertices) {
+			for i, j := 0, len(currentPath)-1; i < j; i, j = i+1, j-1 {
+				currentPath[i], currentPath[j] = currentPath[j], currentPath[i]
 			}
 
-			ticketsWithAlternatives = append(ticketsWithAlternatives, currentTickets)
+			for i, j := 0, len(currentTickets)-1; i < j; i, j = i+1, j-1 {
+				currentTickets[i], currentTickets[j] = currentTickets[j], currentTickets[i]
+			}
+
+			if currentCost < minCost {
+				paths = make([][]Vertex, 0)
+				tickets = make([][]TrainTicket, 0)
+
+				minCost = currentCost
+			}
+
+			paths = append(paths, currentPath)
+			tickets = append(tickets, currentTickets)
 		}
+	}
+
+	ticketsWithAlternatives := make([]TicketsWithAlternatives, 0)
+	for i, path := range paths {
+		currentTickets := make(TicketsWithAlternatives, 0)
+
+		for j, vertex := range path {
+			currentTickets = append(currentTickets, vertex.getTicketAlternativesByPrice(tickets[i][j]))
+		}
+
+		ticketsWithAlternatives = append(ticketsWithAlternatives, currentTickets)
 	}
 
 	return ticketsWithAlternatives

@@ -1,5 +1,7 @@
 package main
 
+import "sort"
+
 type VertexSet struct {
 	list map[*Vertex]struct{}
 }
@@ -52,6 +54,10 @@ func (s *VertexSet) getList() []*Vertex {
 	for k := range s.list {
 		keys = append(keys, k)
 	}
+
+	sort.Slice(keys, func(i, j int) bool {
+		return keys[i].stationID > keys[j].stationID
+	})
 
 	return keys
 }

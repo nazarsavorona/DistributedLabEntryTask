@@ -10,8 +10,7 @@ import (
 
 const FakeHugeCost = math.MaxFloat64
 
-const FakeTripDuration = time.Hour * 24 * 3
-const FakeTravelDuration = FakeTripDuration * 10
+const FakeTravelDuration = time.Hour * 24 * 30
 
 const FakeTimeUnixNano = int64(-62169984000) // time.Date(0, 0, 0, 0, 0, 0, 0, time.UTC).Unix() representation
 var FakeTime = time.Unix(FakeTimeUnixNano, 0)
@@ -44,7 +43,7 @@ func NewFakeTicket() *TrainTicket {
 		price:     FakeHugeCost,
 		departure: FakeTime,
 		arrival:   FakeTime,
-		duration:  FakeTripDuration,
+		duration:  FakeTravelDuration,
 	}
 }
 

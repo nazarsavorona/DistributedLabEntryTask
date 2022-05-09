@@ -5,7 +5,7 @@ import (
 )
 
 func HeldKarpByCost(start *Vertex, vertices VertexSet, v Vertex, path *[]Vertex, cost *float64,
-	currentPath []Vertex, currentCost float64, tickets *[]TrainTicket, currentTickets []TrainTicket) float64 {
+	currentPath []Vertex, currentCost float64, tickets *Tickets, currentTickets Tickets) float64 {
 	if vertices.size() == 1 && vertices.has(&v) {
 		ticket := start.getTicketByPrice(v.stationID)
 		currentTickets = append(currentTickets, *ticket)
@@ -29,8 +29,7 @@ func HeldKarpByCost(start *Vertex, vertices VertexSet, v Vertex, path *[]Vertex,
 	localCost := FakeHugeCost
 
 	for _, currentVertex := range otherVertices {
-		tempSet := *NewVertexSet()
-		tempSet = *tempSet.union(&vertices)
+		tempSet := *NewVertexSet().union(&vertices)
 
 		ticket := currentVertex.getTicketByPrice(v.stationID)
 		currentAdjacentCost := ticket.price
@@ -67,54 +66,75 @@ func HeldKarpByCost(start *Vertex, vertices VertexSet, v Vertex, path *[]Vertex,
 	return minCost
 }
 
-func HeldKarpByDuration(start *Vertex, currentTime *time.Time, vertices VertexSet, v Vertex, path *[]Vertex, tickets *[]TrainTicket, globalVertices *VertexSet) time.Duration {
+func HeldKarpByDuration(start *Vertex, currentTime time.Time, vertices VertexSet, v Vertex, paths *[][]Vertex, optimalDuration *time.Duration,
+	currentPath []Vertex, currentDuration time.Duration, tickets *[]Tickets, currentTickets Tickets) time.Duration {
 	if vertices.size() == 1 && vertices.has(&v) {
-		_, duration := start.getTicketByDuration(v.stationID, *currentTime)
+		ticket, duration := start.getTicketByDuration(v.stationID, currentTime)
+		currentTickets = append(currentTickets, *ticket)
+		currentPath = append(currentPath, *start)
+		currentTime = ticket.arrival
+
+		currentDuration += duration
+
+		if *optimalDuration > currentDuration {
+			*tickets = make([]Tickets, 0)
+			*paths = make([][]Vertex, 0)
+
+			*optimalDuration = currentDuration
+		}
+
+		if *optimalDuration >= currentDuration {
+			*tickets = append(*tickets, currentTickets)
+			*paths = append(*paths, currentPath)
+		}
 
 		return duration
 	}
 
 	vertices.remove(&v)
+
 	otherVertices := vertices.getList()
 
-	currentDuration := FakeTravelDuration
+	localDuration := FakeTravelDuration
 	minDuration := FakeTravelDuration
 
-	minVertex := otherVertices[0]
-	minTicket := NewFakeTicket()
-	minVertexFound := false
-
 	for _, currentVertex := range otherVertices {
-		tempSet := *NewVertexSet()
-		tempSet.addMany(otherVertices...)
+		previousTime := currentTime
+		tempSet := *NewVertexSet().union(&vertices)
 
-		ticket, duration := currentVertex.getTicketByDuration(v.stationID, *currentTime)
+		ticket, duration := currentVertex.getTicketByDuration(v.stationID, currentTime)
 
-		if duration == FakeTripDuration || duration == FakeTravelDuration || !globalVertices.has(currentVertex) {
+		if duration == FakeTravelDuration {
 			continue
 		}
 
-		currentHeldKarp := HeldKarpByDuration(start, currentTime, tempSet, *currentVertex, path, tickets, globalVertices)
+		currentPath = append(currentPath, *currentVertex)
+		currentTickets = append(currentTickets, *ticket)
+		currentDuration += duration
+		currentTime = ticket.arrival
 
-		if currentHeldKarp == FakeTripDuration || currentHeldKarp == FakeTravelDuration {
+		currentHeldKarp := HeldKarpByDuration(start, currentTime, tempSet, *currentVertex, paths, optimalDuration,
+			currentPath, currentDuration, tickets, currentTickets)
+
+		if currentHeldKarp == FakeTravelDuration {
+			currentPath = currentPath[:len(currentPath)-1]
+			currentTickets = currentTickets[:len(currentTickets)-1]
+			currentDuration -= duration
+			currentTime = previousTime
+
 			continue
 		}
 
-		currentDuration = currentHeldKarp + duration
+		localDuration = currentHeldKarp + duration
 
-		if minDuration == FakeTravelDuration || minDuration > currentDuration {
-			minDuration = currentDuration
-			minVertex = currentVertex
-			minTicket = ticket
-			minVertexFound = true
+		if minDuration == FakeTravelDuration || minDuration > localDuration {
+			minDuration = localDuration
 		}
-	}
 
-	if minVertexFound {
-		*path = append(*path, *minVertex)
-		*tickets = append(*tickets, *minTicket)
-		*currentTime = minTicket.arrival
-		globalVertices.remove(minVertex)
+		currentPath = currentPath[:len(currentPath)-1]
+		currentTickets = currentTickets[:len(currentTickets)-1]
+		currentDuration -= duration
+		currentTime = previousTime
 	}
 
 	return minDuration
